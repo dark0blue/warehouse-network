@@ -1,4 +1,5 @@
 from warehouse import Warehouse
+from routing_services import get_route_info
 
 
 class WarehouseNetwork:
@@ -71,6 +72,33 @@ class WarehouseNetwork:
 
             source.remove_product(product_code, quantity)
             destination.add_product(product, quantity)
+
+    def route_between(self, source_name, destination_name):
+        source = self.get_warehouse(source_name)
+        destination = self.get_warehouse(destination_name)
+
+        if source is None or destination is None:
+            return
+
+        return get_route_info(
+            source.lat,
+            source.lon,
+            destination.lat,
+            destination.lon
+        )
+
+    def route_between_customer(self, warehouse_name, customer_lat, customer_lon):
+        warehouse = self.get_warehouse(warehouse_name)
+
+        if warehouse is None:
+            return
+
+        return get_route_info(
+            warehouse.lat,
+            warehouse.lon,
+            customer_lat,
+            customer_lon
+        )
 
     def print_network_inventory(self):
         for warehouse in self.warehouses.values():

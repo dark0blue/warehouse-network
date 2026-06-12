@@ -1,7 +1,9 @@
 class Warehouse:
-    def __init__(self, name: str, capacity_m3: float):
+    def __init__(self, name: str, capacity_m3: float, lat: float = 0.0, lon: float = 0.0):
         self.name = name
         self.capacity_m3 = capacity_m3
+        self.lat = lat
+        self.lon = lon
         self.inventory = {}
 
     def current_volume(self):
@@ -72,6 +74,7 @@ class Warehouse:
 
     def print_inventory(self):
         print(f"Inventory for {self.name}:")
+        print(f"Location: {self.lat}, {self.lon}")
 
         if len(self.inventory) == 0:
             print("Empty warehouse")
@@ -84,4 +87,4 @@ class Warehouse:
             print(f"{product_code} - {product.name}: {quantity}")
 
     def __repr__(self):
-        return f"Warehouse({self.name})"
+        return f"Warehouse({self.name}, lat={self.lat}, lon={self.lon})"
