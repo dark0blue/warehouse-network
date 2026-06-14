@@ -68,10 +68,10 @@ class WarehouseNetwork:
             return
 
         for product_code, quantity in items.items():
-            product = source.get_product(product_code)
+            removed_batches = source.remove_product(product_code, quantity)
 
-            source.remove_product(product_code, quantity)
-            destination.add_product(product, quantity)
+            for batch in removed_batches:
+                destination.add_product(batch.product, batch.quantity, batch.exp_date)
 
     def route_between(self, source_name, destination_name):
         source = self.get_warehouse(source_name)
