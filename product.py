@@ -18,7 +18,8 @@ class Product:
             "name": self.name,
             "code": self.code,
             "weight_kg": self.weight_kg,
-            "volume_m3": self.volume_m3
+            "volume_m3": self.volume_m3,
+            "category": self.category
         }
 
     @classmethod
@@ -27,7 +28,8 @@ class Product:
             data["name"],
             data["code"],
             data["weight_kg"],
-            data["volume_m3"]
+            data["volume_m3"],
+            data.get("category", "general")
         )
 
     def __repr__(self):

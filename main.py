@@ -27,7 +27,7 @@ def read_date(text):
 def read_items():
     items = {}
 
-    print("Write items like this: Milk001 10")
+    print("Add items.")
     print("Empty product code stops.")
 
     while True:
@@ -62,8 +62,10 @@ def show_inventory(network):
             continue
 
         for product_code, batches in warehouse.inventory.items():
+            product = batches[0].product
+
             print()
-            print(product_code)
+            print(f"{product_code} - {product.name} - {product.category}")
 
             for batch in batches:
                 print(
@@ -92,10 +94,14 @@ def add_product_to_warehouse(network):
     code = input("Product code: ")
     weight_kg = read_float("Weight kg: ")
     volume_m3 = read_float("Volume m3: ")
+    category = input("Category or empty: ")
     quantity = read_int("Quantity: ")
     exp_date = read_date("Expiration date yyyy-mm-dd or empty: ")
 
-    product = Product(name, code, weight_kg, volume_m3)
+    if category == "":
+        category = "general"
+
+    product = Product(name, code, weight_kg, volume_m3, category)
     warehouse.add_product(product, quantity, exp_date)
 
     print("Product added.")
