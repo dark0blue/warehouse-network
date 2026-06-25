@@ -13,5 +13,23 @@ class Product:
         self.volume_m3 = volume_m3
         self.category = category
 
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "code": self.code,
+            "weight_kg": self.weight_kg,
+            "volume_m3": self.volume_m3
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            data["name"],
+            data["code"],
+            data["weight_kg"],
+            data["volume_m3"]
+        )
+
     def __repr__(self):
-        return f"Product(name={self.name}, code={self.code})"
+        return f"Product(name = {self.name}, code = {self.code})"
+    
