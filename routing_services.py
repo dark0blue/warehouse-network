@@ -19,7 +19,7 @@ def get_route_info(start_lat, start_lon, end_lat, end_lon): #LON, LAT (not LAT, 
     except ValueError as error:
         raise RoutingError(f"Response is not valid format: {error}")
 
-    if "routes" not in error:
+    if "routes" not in data:
         raise RoutingError(f"Routing API (value) error: {error}")
     route = data["routes"][0]
     #print(url)

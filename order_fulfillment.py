@@ -1,12 +1,10 @@
 from abc import ABC, abstractmethod
 from datetime import date
-from scipy.optimize import linprog
 
 from warehouse_network import WarehouseNetwork
 from errors import (
     InvalidQuantityError,
     OrderCannotBeFulfilledError,
-    OptimizationError,
 )
 
 
@@ -16,9 +14,9 @@ class FulfillmentStrategy(ABC):
         pass
 
 
-class WeightedDistanceExpirationStrategy(FulfillmentStrategy):
+class TransportCostWasteStrategy(FulfillmentStrategy):
     def create_plan(self, service, order, customer_lat, customer_lon, k):
-        return service._create_greedy_plan(
+        return service.create_greedy_plan(
             order,
             customer_lat,
             customer_lon,
@@ -29,7 +27,7 @@ class WeightedDistanceExpirationStrategy(FulfillmentStrategy):
 
 class ClosestThenOldestStrategy(FulfillmentStrategy):
     def create_plan(self, service, order, customer_lat, customer_lon, k):
-        return service._create_greedy_plan(
+        return service.create_greedy_plan(
             order,
             customer_lat,
             customer_lon,
@@ -41,101 +39,15 @@ class ClosestThenOldestStrategy(FulfillmentStrategy):
         )
 
 
-class LinearProgrammingCostStrategy(FulfillmentStrategy):
-    def create_plan(self, service, order, customer_lat, customer_lon, k):
-        plan = []
 
-        for product_code, wanted_quantity in order.items():
-            if wanted_quantity <= 0:
-                raise InvalidQuantityError(
-                    f"Invalid order quantity {wanted_quantity} for product '{product_code}'. "
-                    f"Quantity must be positive."
-                )
-
-            candidates = list(
-                service.available_batches(
-                    product_code,
-                    customer_lat,
-                    customer_lon,
-                    k
-                )
-            )
-
-            if not candidates:
-                raise OrderCannotBeFulfilledError(
-                    f"No available non-expired batches for product '{product_code}'."
-                )
-
-            total_available = sum(item["batch"].quantity for item in candidates)
-
-            if total_available < wanted_quantity:
-                missing = wanted_quantity - total_available
-                raise OrderCannotBeFulfilledError(
-                    f"Cannot fulfill order for product '{product_code}'. "
-                    f"Requested: {wanted_quantity}, available: {total_available}, "
-                    f"missing: {missing}."
-                )
-
-            c = [item["distance_km"] for item in candidates]
-
-            A_eq = [[1 for _ in candidates]]
-            b_eq = [wanted_quantity]
-
-            bounds = [
-                (0, item["batch"].quantity)
-                for item in candidates
-            ]
-
-            result = linprog(
-                c=c,
-                A_eq=A_eq,
-                b_eq=b_eq,
-                bounds=bounds,
-                method="highs"
-            )
-
-            if not result.success:
-                raise OptimizationError(
-                    f"Linear programming failed for product '{product_code}': "
-                    f"{result.message}"
-                )
-
-            for item, quantity in zip(candidates, result.x):
-                quantity = round(quantity)
-
-                if quantity <= 0:
-                    continue
-
-                plan.append({
-                    "warehouse_name": item["warehouse"].name,
-                    "product_code": product_code,
-                    "quantity": quantity,
-                    "exp_date": item["batch"].exp_date,
-                    "distance_km": item["distance_km"],
-                    "days_left": item["days_left"],
-                    "score": item["score"],
-                    "algorithm": "linear_programming_min_transport_cost"
-                })
-
-        return plan
 
 
 class OrderFulfillmentService:
-    def __init__(
-        self,
-        network: WarehouseNetwork,
-        strategy: FulfillmentStrategy | None = None
-    ):
+    def __init__(self, network: WarehouseNetwork, strategy: FulfillmentStrategy | None = None):
         self.network = network
-        self.strategy = strategy or WeightedDistanceExpirationStrategy()
+        self.strategy = strategy or ClosestThenOldestStrategy()
 
-    def available_batches(
-        self,
-        product_code: str,
-        customer_lat: float,
-        customer_lon: float,
-        k: float = 2.0
-    ):
+    def available_batches(self, product_code: str, customer_lat: float, customer_lon: float, k: float = 2.0):
         today = date.today()
 
         for warehouse in self.network.list_warehouses():
@@ -166,7 +78,7 @@ class OrderFulfillmentService:
                     "score": score,
                 }
 
-    def _create_greedy_plan(
+    def create_greedy_plan(
         self,
         order: dict[str, int],
         customer_lat: float,

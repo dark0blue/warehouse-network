@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 
 from product import Product
 from warehouse import Warehouse
@@ -271,6 +271,9 @@ def main():
                 print("bye bye :D")
                 break
 
+            elif choice == "omg":
+                network = load_demo_data()
+
             else:
                 print("Invalid choice.")
 
@@ -288,6 +291,61 @@ def main():
             print()
             print("Something went wrong:")
             print(error)
+
+
+
+
+
+
+
+
+
+
+def load_demo_data():
+    network = WarehouseNetwork()
+
+    today = date.today()
+
+    milk = Product("Milk", "Milk001", 1, 0.001, "dairy")
+    bread = Product("Bread", "Bread001", 0.5, 0.003, "bakery")
+    water = Product("Water", "Water001", 1.5, 0.0015, "drinks")
+    cheese = Product("Cheese", "Cheese001", 0.3, 0.002, "dairy")
+
+    sofia = Warehouse("Sofia", 6, 42.6977, 23.3219)
+    plovdiv = Warehouse("Plovdiv", 8, 42.1354, 24.7453)
+    varna = Warehouse("Varna", 8, 43.2141, 27.9147)
+    burgas = Warehouse("Burgas", 7, 42.5048, 27.4626)
+
+    network.add_warehouse(sofia)
+    network.add_warehouse(plovdiv)
+    network.add_warehouse(varna)
+    network.add_warehouse(burgas)
+
+    sofia.add_product(milk, 400, today + timedelta(days=8))
+    sofia.add_product(milk, 600, today + timedelta(days=25))
+    sofia.add_product(bread, 700, today + timedelta(days=4))
+    sofia.add_product(water, 1200, today + timedelta(days=90))
+    sofia.add_product(cheese, 400, today + timedelta(days=15))
+
+    plovdiv.add_product(milk, 300, today + timedelta(days=12))
+    plovdiv.add_product(bread, 400, today + timedelta(days=5))
+    plovdiv.add_product(water, 800, today + timedelta(days=120))
+    plovdiv.add_product(cheese, 200, today + timedelta(days=20))
+
+    varna.add_product(milk, 500, today + timedelta(days=7))
+    varna.add_product(bread, 300, today + timedelta(days=3))
+    varna.add_product(water, 1000, today + timedelta(days=100))
+
+    burgas.add_product(milk, 250, today + timedelta(days=18))
+    burgas.add_product(bread, 250, today + timedelta(days=6))
+    burgas.add_product(cheese, 150, today + timedelta(days=10))
+
+    return network
+
+
+
+
+            
 
 
 if __name__ == "__main__":
